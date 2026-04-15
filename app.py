@@ -1,24 +1,40 @@
 import streamlit as st
 from transformers import pipeline
 
+# Load model (cached)
 @st.cache_resource
 def load_summarizer():
-    return pipeline("summarization", model="sshleifer/bart-tiny")
+    return pipeline(
+        task="summarization",
+        model="sshleifer/distilbart-cnn-12-6"
+    )
 
+# ✅ IMPORTANT: initialize summarizer
 summarizer = load_summarizer()
 
-st.title("Sentence Summarizer")
-st.write("Enter a sentence to summarize:")
-sentence = st.text_area("", height=100)
+# UI
+st.title("🤖 AI Text Summarizer")
+st.write("Enter a paragraph or sentence to summarize.")
 
-max_length = st.slider("Max Summary Length", min_value=10, max_value=50, value=20)
-min_length = st.slider("Min Summary Length", min_value=5, max_value=20, value=10)
+# Input
+long_text = st.text_area("Enter text:", height=200)
 
+# Controls
+max_length = st.slider("Max Summary Length", 50, 300, 130)
+min_length = st.slider("Min Summary Length", 20, 100, 30)
+
+# Button
 if st.button("Summarize"):
-    if sentence.strip():
-        with st.spinner("Generating summary... "):
-            summary = summarizer(sentence, max_length=max_length, min_length=min_length, do_sample=False)
-        st.subheader("Summary:")
+    if long_text.strip():
+        with st.spinner("Generating summary..."):
+            summary = summarizer(
+                long_text,
+                max_length=max_length,
+                min_length=min_length,
+                do_sample=False
+            )
+
+        st.subheader("📄 Summary:")
         st.success(summary[0]['summary_text'])
     else:
-        st.warning("Please enter a sentence to summarize.")
+        st.warning("⚠️ Please enter some text.")
